@@ -1,5 +1,5 @@
-const { Language } = require('./models');
+const { Conversation } = require('./models');
 
 module.exports = {
-  Language
+  Conversation
 };
