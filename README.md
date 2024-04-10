@@ -1,3 +1,5 @@
+> This repo is a work in progress. For a more complete solution, please use [next-token-prediction](https://github.com/bennyschmidt/next-token-prediction).
+
 # llimo
 
 Large language and image models in pure JavaScript.
