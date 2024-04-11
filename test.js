@@ -13,8 +13,8 @@ const withDataset = async query => {
 
   console.log(
     'chat >>',
-    `query: ${query}`,
-    agent.chat(query)
+    `You: \n\n${query}\n`,
+    `LLM: ${agent.chat(query)}\n\n`
   );
 };
 
@@ -43,31 +43,29 @@ const withFiles = async query => {
 
   console.log(
     'chat >>',
-    `query: ${query}`,
-    agent.chat(query)
+    `You: \n\n${query}\n`,
+    `LLM: ${agent.chat(query)}\n\n`
   );
 };
 
 const runTests = async () => {
-  // Unit: Run different queries in isolation
+  // Unit: Run different chat prompts in isolation
 
-  await withDataset('what');
+  await withDataset('tell me about Paris');
 
-  await withDataset('What is');
+  await withDataset('should I travel by car, train, or airplane?');
 
-  await withDataset('what is the');
+  await withDataset('talk about something you recognize');
 
-  await withDataset('hopefully');
+  await withDataset('which forests are the most beautiful?');
 
-  await withDataset('where is');
+  // e2e: Run full training then get completions
 
-  // e2e: Run full training then query
+  await withTraining('Society');
 
-  await withTraining('The sun');
+  // e2e: Run full training on user provided files then prompt
 
-  // e2e: Run full training on user provided files
-
-  await withFiles('Society');
+  await withFiles('where is the moon');
 };
 
 runTests();
