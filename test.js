@@ -61,11 +61,11 @@ const runTests = async () => {
 
   // e2e: Run full training then get completions
 
-  await withTraining('Society');
+  await withTraining('what about society?');
 
   // e2e: Run full training on user provided files then prompt
 
-  await withFiles('where is the moon');
+  await withFiles('what does it do');
 };
 
 runTests();
