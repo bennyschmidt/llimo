@@ -1,13 +1,16 @@
 {
   "name": "llimo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "bennyschmidt",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "node test.js"
+    "test": "node test.js",
+    "example": "node ./examples/readline-chat/index.js"
   },
   "dependencies": {
-    "next-token-prediction": "^1.0.1"
+    "next-token-prediction": "^1.0.3",
+    "wink-nlp-utils": "^2.1.0",
+    "wink-pos-tagger": "^2.2.2"
   }
 }

@@ -1,35 +1,67 @@
-const { dirname } = require('path');
-const __root = dirname(require.main.filename);
-const fs = require('fs').promises;
+const baseUtils = require('next-token-prediction/utils');
+
+const Tagger = require('wink-pos-tagger');
+
+// See: https://winkjs.org/wink-pos-tagger/
+
+const tagger = Tagger();
+
+const PARTS_OF_SPEECH_CODES = {
+  CC:	"Coordinating conjunction",
+  CD:	"Cardinal number",
+  DT:	"Determiner",
+  EX:	"Existential there",
+  FW:	"Foreign word",
+  IN:	"Preposition or subordinating conjunction",
+  JJ:	"Adjective",
+  JJR: "Adjective, comparative",
+  JJS: "Adjective, superlative",
+  LS: "List item marker",
+  MD: "Modal",
+  NN: "Noun, singular or mass",
+  NNS: "Noun, plural",
+  NNP: "Proper noun, singular",
+  NNPS: "Proper noun, plural",
+  PDT: "Predeterminer",
+  POS: "Possessive ending",
+  PRP: "Personal pronoun",
+  PRP$: "Possessive pronoun",
+  RB: "Adverb",
+  RBR: "Adverb, comparative",
+  RBS: "Adverb, superlative",
+  RP: "Particle",
+  SYM: "Symbol",
+  TO: "to",
+  UH: "Interjection",
+  VB: "Verb, base form",
+  VBD: "Verb, past tense",
+  VBG: "Verb, gerund or present participle",
+  VBN: "Verb, past participle",
+  VBP: "Verb, non-3rd person singular present",
+  VBZ: "Verb, 3rd person singular present",
+  WDT: "Wh-determiner",
+  WP: "Wh-pronoun",
+  WP$: "Possessive wh-pronoun",
+  WRB: "Wh-adverb"
+};
 
 module.exports = {
-  combineDocuments: async documents => {
-    let text = '';
+  ...baseUtils,
 
-    for (const document of documents) {
-      const sourceFile = await fs.readFile(
-        `${__root}/training/documents/${document}.txt`
-      );
+  getPartsOfSpeech: text => {
+    const tags = tagger.tagSentence(text);
+    const parts = [];
 
-      if (!sourceFile?.toString) {
-        throw new Error('Invalid file format.');
-      }
+    for (const tag of tags) {
+      const { pos } = tag;
 
-      const source = sourceFile.toString().trim();
+      parts.push({
+        ...tag,
 
-      text += `\n${source}`;
+        label: `${PARTS_OF_SPEECH_CODES[pos]}`
+      });
     }
 
-    return text;
-  },
-
-  fetchEmbeddingByName: async name => {
-    const embeddingFile = await fs.readFile(
-      `${__root}/training/embeddings/${name}.json`
-    );
-
-    const embedding = JSON.parse(embeddingFile.toString());
-
-    return embedding;
+    return parts;
   }
 };

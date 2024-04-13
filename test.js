@@ -1,7 +1,7 @@
 const { dirname } = require('path');
 const __root = dirname(require.main.filename);
 
-const { Conversation: ChatModel } = require('./models');
+const { Chat: ChatModel } = require('./models');
 const OpenSourceBooksDataset = require(`${__root}/training/datasets/OpenSourceBooks`);
 
 const withDataset = async query => {
@@ -12,9 +12,9 @@ const withDataset = async query => {
   // Log chat response
 
   console.log(
-    'chat >>',
-    `query: ${query}`,
-    agent.chat(query)
+    '\n\nchat >>',
+    `You: ${query}\n`,
+    `LLM: ${agent.ask(query)}\n\n`
   );
 };
 
@@ -28,7 +28,7 @@ const withTraining = async query => {
   // Log completions
 
   console.log(
-    'getCompletions >>',
+    '\n\ngetCompletions >>',
     `query: ${query}`,
     agent.getCompletions(query)
   );
@@ -42,32 +42,30 @@ const withFiles = async query => {
   // Log chat response
 
   console.log(
-    'chat >>',
-    `query: ${query}`,
-    agent.chat(query)
+    '\n\nchat >>',
+    `You: ${query}\n`,
+    `LLM: ${agent.ask(query)}\n\n`
   );
 };
 
 const runTests = async () => {
-  // Unit: Run different queries in isolation
+  // Unit: Run different chat prompts in isolation
 
-  await withDataset('what');
+  await withDataset('what is something nice about Paris');
 
-  await withDataset('What is');
+  await withDataset('should I travel by car, train, or airplane?');
 
-  await withDataset('what is the');
+  await withDataset('What is something you recognize?');
 
-  await withDataset('hopefully');
+  await withDataset('which forests are the most beautiful?');
 
-  await withDataset('where is');
+  // e2e: Run full training then get completions
 
-  // e2e: Run full training then query
+  await withTraining('what about society?');
 
-  await withTraining('The sun');
+  // e2e: Run full training on user provided files then prompt
 
-  // e2e: Run full training on user provided files
-
-  await withFiles('Society');
+  await withFiles('what does it do');
 };
 
 runTests();
