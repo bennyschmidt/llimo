@@ -1,4 +1,4 @@
-> ⚠️ This repo is a work in progress. For a more complete solution, please use [next-token-prediction](https://github.com/bennyschmidt/next-token-prediction).
+> ⚠️ This project is a work in progress. For a more complete solution, please use [next-token-prediction](https://github.com/bennyschmidt/next-token-prediction).
 
 # llimo
 
@@ -40,4 +40,10 @@ MyChatBot();
 
 ## Demo
 
-Coming soon!
+A work in progress. Things needed:
+
+1) A lot more training data
+
+2) Better parts-of-speech parsing
+
+https://github.com/bennyschmidt/llimo/assets/45407493/7d2a6936-7243-45e8-a9fc-9a64172673b7
