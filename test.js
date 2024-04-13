@@ -1,7 +1,7 @@
 const { dirname } = require('path');
 const __root = dirname(require.main.filename);
 
-const { Conversation: ChatModel } = require('./models');
+const { Chat: ChatModel } = require('./models');
 const OpenSourceBooksDataset = require(`${__root}/training/datasets/OpenSourceBooks`);
 
 const withDataset = async query => {
@@ -12,9 +12,9 @@ const withDataset = async query => {
   // Log chat response
 
   console.log(
-    'chat >>',
-    `You: \n\n${query}\n`,
-    `LLM: ${agent.chat(query)}\n\n`
+    '\n\nchat >>',
+    `You: ${query}\n`,
+    `LLM: ${agent.ask(query)}\n\n`
   );
 };
 
@@ -28,7 +28,7 @@ const withTraining = async query => {
   // Log completions
 
   console.log(
-    'getCompletions >>',
+    '\n\ngetCompletions >>',
     `query: ${query}`,
     agent.getCompletions(query)
   );
@@ -42,20 +42,20 @@ const withFiles = async query => {
   // Log chat response
 
   console.log(
-    'chat >>',
-    `You: \n\n${query}\n`,
-    `LLM: ${agent.chat(query)}\n\n`
+    '\n\nchat >>',
+    `You: ${query}\n`,
+    `LLM: ${agent.ask(query)}\n\n`
   );
 };
 
 const runTests = async () => {
   // Unit: Run different chat prompts in isolation
 
-  await withDataset('tell me about Paris');
+  await withDataset('what is something nice about Paris');
 
   await withDataset('should I travel by car, train, or airplane?');
 
-  await withDataset('talk about something you recognize');
+  await withDataset('What is something you recognize?');
 
   await withDataset('which forests are the most beautiful?');
 

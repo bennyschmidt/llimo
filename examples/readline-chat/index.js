@@ -3,7 +3,7 @@ const { stdin: input, stdout: output } = require('node:process');
 const { dirname } = require('path');
 const __root = dirname(require.main.filename);
 
-const { Conversation: ChatModel } = require('../../models');
+const { Chat: ChatModel } = require('../../models');
 const OpenSourceBooksDataset = require(`${__root}/training/datasets/OpenSourceBooks`);
 
 const rl = readline.createInterface({ input, output });
@@ -23,7 +23,7 @@ const MyChatBot = async () => {
       process.exit();
     }
 
-    const answer = agent.chat(input);
+    const answer = agent.ask(input);
 
     console.log(`${answer}`, '\n');
 

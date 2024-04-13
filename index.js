@@ -1,5 +1,5 @@
-const { Conversation } = require('./models');
+const { Chat } = require('./models');
 
 module.exports = {
-  Conversation
+  Chat
 };
