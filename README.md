@@ -2,9 +2,9 @@
 
 # llimo
 
-![limo](https://github.com/bennyschmidt/llimo/assets/45407493/be0f481f-7b5c-431b-966d-f430e9bd5829)
-
 Large language and image models in pure JavaScript.
+
+![limo](https://github.com/bennyschmidt/llimo/assets/45407493/be0f481f-7b5c-431b-966d-f430e9bd5829)
 
 ## Install
 
