@@ -25,7 +25,9 @@ const MyChatBot = async () => {
 
     const answer = agent.ask(input);
 
-    console.log(`${answer}`, '\n');
+    if (answer) {
+      console.log(`ANSWER ${answer}`, '\n');
+    }
 
     prompt();
   };

@@ -32,7 +32,7 @@ const MyChatBot = async () => {
 
   // Chat with LLM
 
-  agent.chat('when is the best time to visit Paris?');
+  agent.ask('when is the best time to visit Paris?');
 };
 
 MyChatBot();

@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "next-token-prediction": "^1.0.3",
-    "wink-nlp-utils": "^2.1.0",
     "wink-pos-tagger": "^2.2.2"
   }
 }
