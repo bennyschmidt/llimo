@@ -42,8 +42,8 @@ MyChatBot();
 
 A work in progress. Things needed:
 
-1) A lot more training data
+1) A lot more training data - this directly translates to what it accurately "knows"
 
-2) Better parts-of-speech parsing
+2) Better parts-of-speech parsing - to allow for more flexible, even misspelled inputs 
 
 https://github.com/bennyschmidt/llimo/assets/45407493/7d2a6936-7243-45e8-a9fc-9a64172673b7
