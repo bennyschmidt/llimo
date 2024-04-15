@@ -42,10 +42,12 @@ MyChatBot();
 
 ## Demo
 
+Q & A Demo ([Paris](https://github.com/bennyschmidt/llimo/blob/master/training/datasets/Paris.js) dataset):
+
+https://github.com/bennyschmidt/llimo/assets/45407493/df8e9627-ff48-41ed-8714-a880beb8680a
+
 A work in progress. Things needed:
 
 1) A lot more training data - this directly translates to what it accurately "knows"
 
 2) Better parts-of-speech parsing - to allow for more flexible, even misspelled inputs
-
-https://github.com/bennyschmidt/llimo/assets/45407493/81dbab2a-f516-4ae6-9014-13e35a6e15c7
