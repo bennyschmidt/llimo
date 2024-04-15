@@ -74,35 +74,37 @@ const runTests = async () => {
   //       with different datasets
 
   await withDataset(OpenSourceBooksDataset, [
-    'What is a fact about grass?',
-    'what is london',
-    'Where is London?',
-    'what happened in the morning',
-    'should I travel by car, train, or airplane?',
-    'what was the sun like then?'
+    "What is a fact about grass?",
+    "what is london",
+    "what happened in the morning",
+    "should I travel by car, train, or airplane?",
+    "how was the sun then?",
+    "what's thai food?"
   ]);
 
   await withDataset(ParisDataset, [
-    'where is Paris?',
-    'what does Paris represent?',
-    'what did paris used to represent',
-    'what is Paris known for?',
-    'what is paris famous for',
-    'what is Paris the capital of?',
-    'what was Paris the capital of?',
-    'where is London'
+    "where is Paris?",
+    "what is paris home to",
+    "what does Paris represent?",
+    "what is Paris known for?",
+    "what is paris famous for",
+    "what is Paris the capital of?",
+    "what was Paris the capital of?",
+    "where is London",
+    "What is Paris surrounded by?",
+    "what is paris referred to as?"
   ]);
 
-  // // e2e: Run training from bootstrap then get completions
+  // e2e: Run training from bootstrap then get completions
 
-  // await withBootstrap(['what about society?']);
+  await withBootstrap(['what about society?']);
 
-  // // e2e: Run full training on user provided files then prompt
+  // e2e: Run full training on user provided files then prompt
 
-  // await withFiles(
-  //   ['brave-new-world'],
-  //   ['what is The Nile?']
-  // );
+  await withFiles(
+    ['brave-new-world'],
+    ['what is The Nile?']
+  );
 };
 
 runTests();
