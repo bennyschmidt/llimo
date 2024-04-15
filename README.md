@@ -48,4 +48,4 @@ A work in progress. Things needed:
 
 2) Better parts-of-speech parsing - to allow for more flexible, even misspelled inputs
 
-https://github.com/bennyschmidt/llimo/assets/45407493/7d2a6936-7243-45e8-a9fc-9a64172673b7
+https://github.com/bennyschmidt/llimo/assets/45407493/81dbab2a-f516-4ae6-9014-13e35a6e15c7
