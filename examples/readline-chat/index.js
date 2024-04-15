@@ -4,13 +4,13 @@ const { dirname } = require('path');
 const __root = dirname(require.main.filename);
 
 const { Chat: ChatModel } = require('../../models');
-const OpenSourceBooksDataset = require(`${__root}/training/datasets/OpenSourceBooks`);
+const ParisDataset = require(`${__root}/training/datasets/Paris`);
 
 const rl = readline.createInterface({ input, output });
 
-const MyChatBot = async () => {
+const ParisChat = async () => {
   const agent = await ChatModel({
-    dataset: OpenSourceBooksDataset
+    dataset: ParisDataset
   });
 
   const print = input => {
@@ -33,10 +33,10 @@ const MyChatBot = async () => {
   };
 
   const prompt = () => {
-    rl.question('Type something... (press ENTER to chat) ', print);
+    rl.question('Ask me something about Paris... (press ENTER to chat) ', print);
   };
 
   prompt();
 };
 
-MyChatBot();
+ParisChat();

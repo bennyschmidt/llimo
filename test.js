@@ -3,21 +3,22 @@ const __root = dirname(require.main.filename);
 
 const { Chat: ChatModel } = require('./models');
 const OpenSourceBooksDataset = require(`${__root}/training/datasets/OpenSourceBooks`);
+const ParisDataset = require(`${__root}/training/datasets/Paris`);
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
 // Run the chat model with a saved dataset
 
-const withDataset = async questions => {
+const withDataset = async (dataset, questions) => {
   const agent = await ChatModel({
-    dataset: OpenSourceBooksDataset
+    dataset
   });
 
   for (const question of questions) {
     // Log chat response
 
     console.log(
-      '\n\nchat >>\n\n',
+      '\n\nask >>\n\n',
       `You: ${question}\n`,
       `LLM: ${agent.ask(question)}\n\n`
     );
@@ -28,7 +29,7 @@ const withDataset = async questions => {
 
 // Run the chat model from the default bootstrap
 
-const withTraining = async query => {
+const withBootstrap = async questions => {
   // Bootstrap with a default dataset
 
   const agent = await ChatModel({
@@ -36,12 +37,12 @@ const withTraining = async query => {
   });
 
   for (const question of questions) {
-    // Log completions
+    // Log chat response
 
     console.log(
-      '\n\ngetCompletions >>\n\n',
-      `query: ${question}`,
-      agent.getCompletions(question)
+      '\n\nask >>\n\n',
+      `You: ${question}\n`,
+      `LLM: ${agent.ask(question)}\n\n`
     );
 
     await delay(2000);
@@ -50,16 +51,16 @@ const withTraining = async query => {
 
 // Run the chat model with a new dataset from files
 
-const withFiles = async questions => {
+const withFiles = async (files, questions) => {
   const agent = await ChatModel({
-    files: ['brave-new-world']
+    files
   });
 
   for (const question of questions) {
     // Log chat response
 
     console.log(
-      '\n\nchat >>\n\n',
+      '\n\nask >>\n\n',
       `You: ${question}\n`,
       `LLM: ${agent.ask(question)}\n\n`
     );
@@ -70,24 +71,38 @@ const withFiles = async questions => {
 
 const runTests = async () => {
   // Unit: Run different chat prompts in isolation
+  //       with different datasets
 
-  await withDataset([
+  await withDataset(OpenSourceBooksDataset, [
     'What is a fact about grass?',
     'what is london',
+    'Where is London?',
     'what happened in the morning',
     'should I travel by car, train, or airplane?',
-    'what was the sun like then?',
-    'what does Paris represent?',
-    'what did paris used to represent'
+    'what was the sun like then?'
   ]);
 
-  // // e2e: Run full training then get completions
+  await withDataset(ParisDataset, [
+    'where is Paris?',
+    'what does Paris represent?',
+    'what did paris used to represent',
+    'what is Paris known for?',
+    'what is paris famous for',
+    'what is Paris the capital of?',
+    'what was Paris the capital of?',
+    'where is London'
+  ]);
 
-  await withTraining(['what about society?']);
+  // // e2e: Run training from bootstrap then get completions
+
+  // await withBootstrap(['what about society?']);
 
   // // e2e: Run full training on user provided files then prompt
 
-  await withFiles(['what does it do']);
+  // await withFiles(
+  //   ['brave-new-world'],
+  //   ['what is The Nile?']
+  // );
 };
 
 runTests();

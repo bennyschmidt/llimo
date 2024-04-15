@@ -10,7 +10,6 @@ const {
   toSentenceCase
 } = require('../../utils');
 
-
 const MATCH_PUNCTUATION = new RegExp(/[.,\/#!$%?“”\^&\*;:{}=\_`~()]/g);
 
 /**
@@ -106,6 +105,8 @@ module.exports = async ({
     const noun = getNounPhrase(query);
     const partsOfSpeech = getPartsOfSpeech(query.slice(query.indexOf(noun)));
 
+    console.log(partsOfSpeech);
+
     if (!partsOfSpeech?.length) return;
 
     const nextNoun = getNounPhrase(query.slice(query.indexOf(noun) + noun.length));
@@ -114,7 +115,7 @@ module.exports = async ({
       return nextNoun;
     }
 
-    const word = partsOfSpeech.find(({ pos }) => pos.match(/JJ|VBP/))?.value;
+    const word = partsOfSpeech.find(({ pos }) => pos.match(/JJ|VBP|VBN/))?.value;
 
     return word || '';
   };
@@ -202,26 +203,28 @@ module.exports = async ({
         console.log('FALLBACK', firstWord, '...');
       }
 
-      const keyword = getFocus(query);
+      const keyword = (getFocus(query) || '').trim();
 
-      console.log('MATCH', keyword);
+      let completion = '';
 
-      completions.sort((a, b) => (
-        a.match(keyword) && !b.match(keyword)
-          ? -1
-          : 1
-      ));
+      const matchedPhrases = completions.filter(phrase => keyword && phrase.match(keyword));
+      const isMatch = !!matchedPhrases?.length;
+
+      console.log('MATCH', keyword, isMatch);
+
+      if (isMatch) {
+        // Filter to keyword matches
+
+        completions = matchedPhrases;
+      }
+
+      // Pull a ranked completion from the top ${RANKING_BATCH_SIZE}
+
+      completion = completions[
+        (Math.random() * completions.length) << 0
+      ];
 
       console.log(completions);
-      completion = completions[0];
-
-      // Or pull a random completion from the top ${RANKING_BATCH_SIZE}
-
-      if (!completion) {
-        completion = completions[
-          (Math.random() * completions.length) << 0
-        ];
-      }
 
       // Handle no data
 
