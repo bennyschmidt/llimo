@@ -1,10 +1,10 @@
-> 🚧 Do not use this library. This project is a work in progress. For a more complete solution, please use [next-token-prediction](https://github.com/bennyschmidt/next-token-prediction).
+> 🚧 This project is a work in progress. For a more complete solution, please use [next-token-prediction](https://github.com/bennyschmidt/next-token-prediction).
 
 # llimo
 
 Large language and image models in pure JavaScript.
 
-![limo](https://github.com/bennyschmidt/llimo/assets/45407493/be0f481f-7b5c-431b-966d-f430e9bd5829)
+![llimo](https://github.com/bennyschmidt/llimo/assets/45407493/aaec96e4-52ac-498d-9e3f-eded92862ed6)
 
 ## Install
 
