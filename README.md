@@ -42,7 +42,7 @@ MyChatBot();
 
 ## Demo
 
-Q & A Demo ([Paris](https://github.com/bennyschmidt/llimo/blob/master/training/datasets/Paris.js) dataset):
+Q&A Tests ([Paris](https://github.com/bennyschmidt/llimo/blob/master/training/datasets/Paris.js) dataset):
 
 https://github.com/bennyschmidt/llimo/assets/45407493/df8e9627-ff48-41ed-8714-a880beb8680a
 
