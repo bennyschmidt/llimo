@@ -21,8 +21,13 @@ const MATCH_POS_FOCUS = new RegExp(/JJ|VBP|VBN/);
 const POS_NOUN = "NN";
 const POS_PROPER_NOUN = "NNP";
 const POS_PRONOUN = "PRP"
+const COMPLETE = "COMPLETE";
+const FALLBACK = "FALLBACK";
+const MATCH = "MATCH";
+const PREFACE = "PREFACE";
 const LOCATED = "located";
 const BECAUSE = "because";
+const AND = "and";
 const HOW = "how";
 const COME = "come";
 const ARE = "are";
@@ -31,6 +36,17 @@ const AM = "am";
 const IT = "It";
 const A = "A";
 const I = "I";
+const INSUFFICIENT_INPUT_ERROR = "Can you clarify or rephrase?";
+const INVALID_COMMAND_ERROR = "I can't respond to commands yet.";
+const SELF_REFERENCE_ERROR = "I'm not able to respond to questions about myself because I only train on external information.";
+const NO_DATA_ERROR = "I don't know, sorry.";
+const WHAT_IS = "What is";
+
+const WHAT_IS_ALIASES = [
+  'identify',
+  'tell me about',
+  'talk to me about'
+];
 
 /**
  * Create a language model agent from a
@@ -47,6 +63,12 @@ module.exports = async ({
     files,
     bootstrap
   });
+
+  /**
+   * getNounPhrase
+   * Get the first sequence of consecutive proper noun,
+   * noun, or pronoun tokens (in that order)
+   */
 
   const getNounPhrase = query => {
     const tokens = query.split(' ');
@@ -132,6 +154,12 @@ module.exports = async ({
     return result.trim();
   };
 
+  /**
+   * getPositionalPhrase
+   * Returns the positional cursor, usually a verb
+   * but occasionally followed with a helper
+   */
+
   const getPositionalPhrase = query => {
     const tokens = query.split(' ');
     const firstWord = tokens[0].trim();
@@ -164,6 +192,11 @@ module.exports = async ({
     return cursor || '';
   };
 
+  /**
+   * getFocus
+   * Returns the focus or keyword(s) of the predicate
+   */
+
   const getFocus = query => {
     const noun = getNounPhrase(query);
     const partsOfSpeech = getPartsOfSpeech(query.slice(query.indexOf(noun)));
@@ -180,6 +213,12 @@ module.exports = async ({
 
     return word || '';
   };
+
+  /**
+   * prependArticle
+   * Prepends a token with its article token
+   * as it appears in a sequence
+   */
 
   const prependArticle = (sequence, token) => {
     const leadingPhrase = sequence.slice(0, sequence.indexOf(token.trim()));
@@ -235,25 +274,14 @@ module.exports = async ({
       return query;
     }
 
-    // TODO: Optimize router
+    // "What is" router
 
-    if (
-      input.toLowerCase().slice(0, 8).trim() === 'show me' ||
-      input.toLowerCase().slice(0, 8).trim() === 'tell me'
-    ) {
-      return querify(`What is ${query.slice(8)}`);
-    }
+    for (const alias of WHAT_IS_ALIASES) {
+      const index = alias.length + 1;
 
-    if (input.toLowerCase().slice(0, 9).trim() === 'identify') {
-      return querify(`What is ${query.slice(9)}`);
-    }
-
-    if (input.toLowerCase().slice(0, 14).trim() === 'tell me about') {
-      return querify(`What is ${query.slice(14)}`);
-    }
-
-    if (input.toLowerCase().slice(0, 17).trim() === 'talk to me about') {
-      return querify(`What is ${query.slice(17)}`);
+      if (input.toLowerCase().slice(0, index).trim() === alias) {
+        return querify(`${WHAT_IS} ${query.slice(index)}`);
+      }
     }
 
     if (MATCH_FIRST_WH.test(query.toUpperCase())) {
@@ -272,7 +300,7 @@ module.exports = async ({
 
       const question = tokens.slice(tokens.indexOf(whWord)).join(' ').trim();
 
-      console.log('PREFACE', question, '...');
+      console.log(PREFACE, question, '...');
 
       return querify(question);
     }
@@ -296,7 +324,7 @@ module.exports = async ({
     const positionalPhrase = getPositionalPhrase(query).trim();
 
     if (!nounPhrase) {
-      return "I'm not able to respond to questions about myself because I only train on external information.";
+      return SELF_REFERENCE_ERROR;
     }
 
     // Get the first subject of the sentence
@@ -317,7 +345,7 @@ module.exports = async ({
 
     let completions, sample;
 
-    console.log('COMPLETE', result.trim(), '...');
+    console.log(COMPLETE, result.trim(), '...');
 
     sample = getCompletions(result.trim())?.completions;
     completions = sample && sample.filter(Boolean);
@@ -329,7 +357,7 @@ module.exports = async ({
       sample = getCompletions(nounPhrase)?.completions;
       completions = sample && sample.filter(Boolean);
       result = result.replace(positionalPhrase, '').trim();
-      console.log('FALLBACK', nounPhrase, '...');
+      console.log(FALLBACK, nounPhrase, '...');
 
       // If none and the query is just 1 word, fallback to completing
       // the first word of the query
@@ -338,7 +366,7 @@ module.exports = async ({
         sample = getCompletions(firstWord)?.completions;
         completions = sample && sample.filter(Boolean);
         result = firstWord.trim();
-        console.log('FALLBACK', firstWord, '...');
+        console.log(FALLBACK, firstWord, '...');
       }
     }
 
@@ -349,7 +377,7 @@ module.exports = async ({
     const matchedPhrases = completions.filter(phrase => keyword && phrase.match(keyword));
     const isMatch = !!matchedPhrases?.length;
 
-    console.log('MATCH', keyword, isMatch);
+    console.log(`${MATCH}:`, keyword);
 
     if (isMatch) {
       // Filter to keyword matches
@@ -363,12 +391,10 @@ module.exports = async ({
       (Math.random() * completions.length) << 0
     ];
 
-    console.log(completions);
-
     // Handle no data
 
     if (!completion) {
-      return "I don't know, sorry.";
+      return NO_DATA_ERROR;
     }
 
     // If why, append "because"
@@ -387,14 +413,18 @@ module.exports = async ({
 
   /**
    * ask
-   * Question/answer transformer
+   * Ask a question, get an answer
    */
 
   const ask = input => {
     // Handle insufficient input
 
-    if (input.split(' ').length < 2) {
-      return "Can you clarify or rephrase?";
+    const inputTokens = input
+      .replace(MATCH_PUNCTUATION, '')
+      .split(' ');
+
+    if (inputTokens.length < 2 || inputTokens[0].toLowerCase() === AND) {
+      return INSUFFICIENT_INPUT_ERROR;
     }
 
     // Convert the user input to a query
@@ -402,7 +432,7 @@ module.exports = async ({
     const query = querify(input);
 
     if (!query) {
-      return "I can't respond to commands yet.";
+      return INVALID_COMMAND_ERROR;
     }
 
     // Transform the query to an answer
