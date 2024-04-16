@@ -11,15 +11,26 @@ const {
 } = require('../../utils');
 
 const MATCH_PUNCTUATION = new RegExp(/[.,\/#!$%?“”\^&\*;:{}=\_`~()]/g);
-const MATCH_ARTICLES = new RegExp(/the|an/g);
-const MATCH_WH_REGULAR = new RegExp(/WHO|WHAT|WHEN|HOW/g);
-const MATCH_WHERE = new RegExp(/WHERE/g);
-const MATCH_WHY = new RegExp(/WHY/g);
-const MATCH_MODAL_REGULAR = new RegExp(/IS|ARE|WAS|HAS|HAVE|HAD|MUST|MAY|MIGHT|WERE|WILL|SHALL|CAN|COULD|WOULD|SHOULD|OUGHT/g);
-const MATCH_MODAL_DOES = new RegExp(/DOES/g);
-const MATCH_MODAL_DID = new RegExp(/DID/g);
+const MATCH_FIRST_WH = new RegExp(/WHO|WHAT|WHEN|HOW|WHERE|WHY/);
+const MATCH_FIRST_WHERE = new RegExp(/WHERE/);
+const MATCH_FIRST_WHY = new RegExp(/WHY/);
+const MATCH_FIRST_MODAL = new RegExp(/IS|AM|ARE|WAS|HAS|HAVE|HAD|MUST|MAY|MIGHT|WERE|WILL|SHALL|CAN|COULD|WOULD|SHOULD|OUGHT|DOES|DID/);
+const MATCH_FIRST_YOU = new RegExp(/YOU/);
+const MATCH_FIRST_ARTICLE = new RegExp(/THE|AN/);
+const MATCH_POS_FOCUS = new RegExp(/JJ|VBP|VBN/);
+const POS_NOUN = "NN";
+const POS_PROPER_NOUN = "NNP";
+const POS_PRONOUN = "PRP"
 const LOCATED = "located";
 const BECAUSE = "because";
+const HOW = "how";
+const COME = "come";
+const ARE = "are";
+const YOU = "you";
+const AM = "am";
+const IT = "It";
+const A = "A";
+const I = "I";
 
 /**
  * Create a language model agent from a
@@ -38,6 +49,9 @@ module.exports = async ({
   });
 
   const getNounPhrase = query => {
+    const tokens = query.split(' ');
+    const firstWord = tokens[0].trim();
+    const secondWord = tokens[1]?.trim?.() || '';
     const partsOfSpeech = getPartsOfSpeech(query);
 
     if (!partsOfSpeech?.length) return;
@@ -49,11 +63,11 @@ module.exports = async ({
     let isPrevNNP = true;
 
     for (const part of partsOfSpeech) {
-      if (part.pos === 'NNP') {
+      if (part.pos === POS_PROPER_NOUN) {
         const properNoun = `${part.value} `;
 
         if (isPrevNNP) {
-          result += properNoun;
+          result += prependArticle(query, properNoun);
         } else {
           result = prependArticle(query, properNoun);
         }
@@ -70,11 +84,11 @@ module.exports = async ({
       let isPrevNN = true;
 
       for (const part of partsOfSpeech) {
-        if (part.pos.match('NN')) {
+        if (part.pos.match(POS_NOUN)) {
           const noun = `${part.value} `;
 
           if (isPrevNN) {
-            result += noun;
+            result += prependArticle(query, noun);
           } else {
             result = prependArticle(query, noun);
           }
@@ -86,10 +100,33 @@ module.exports = async ({
       }
     }
 
+    // Find pronoun
+
+    if (!result) {
+      for (const part of partsOfSpeech) {
+        if (part.pos.match(POS_PRONOUN)) {
+          const pronoun = `${part.normal} `;
+
+          result += pronoun;
+
+          if (MATCH_FIRST_YOU.test(result.toUpperCase())) {
+            return '';
+          }
+        }
+      }
+    }
+
     // Default noun
 
     if (!result) {
-      result = 'It';
+      result = IT;
+    }
+
+    if (
+      result.trim().toUpperCase() === I ||
+      firstWord === AM || secondWord === AM
+    ) {
+      result = YOU;
     }
 
     return result.trim();
@@ -101,13 +138,26 @@ module.exports = async ({
     const secondWord = tokens[1]?.trim?.() || '';
     const partsOfSpeech = getPartsOfSpeech(query);
 
-    if (!partsOfSpeech?.length) return;
+    if (!partsOfSpeech?.length) return '';
 
-    let cursor = secondWord;
+    let cursor = '';
+
+    const isWhWord = MATCH_FIRST_WH.test(firstWord.toUpperCase());
+    const isVerb = MATCH_FIRST_MODAL.test(firstWord.toUpperCase());
+
+    if (isWhWord) {
+      cursor = `${secondWord}`
+    } else if (isVerb) {
+      cursor = `${firstWord}`
+    }
+
+    if (firstWord === AM || secondWord === AM || secondWord === I) {
+      cursor = ARE;
+    }
 
     // If where, append "located"
 
-    if (MATCH_WHERE.test(firstWord.toUpperCase())) {
+    if (MATCH_FIRST_WHERE.test(firstWord.toUpperCase())) {
       cursor += ` ${LOCATED}`;
     }
 
@@ -118,17 +168,15 @@ module.exports = async ({
     const noun = getNounPhrase(query);
     const partsOfSpeech = getPartsOfSpeech(query.slice(query.indexOf(noun)));
 
-    console.log(partsOfSpeech);
-
     if (!partsOfSpeech?.length) return;
 
     const nextNoun = getNounPhrase(query.slice(query.indexOf(noun) + noun.length));
 
-    if (nextNoun && nextNoun !== 'It') {
+    if (nextNoun && nextNoun !== IT) {
       return nextNoun;
     }
 
-    const word = partsOfSpeech.find(({ pos }) => pos.match(/JJ|VBP|VBN/))?.value;
+    const word = partsOfSpeech.find(({ pos }) => pos.match(MATCH_POS_FOCUS))?.value;
 
     return word || '';
   };
@@ -137,7 +185,11 @@ module.exports = async ({
     const leadingPhrase = sequence.slice(0, sequence.indexOf(token.trim()));
     const leadingWord = leadingPhrase.split(' ').filter(Boolean).pop();
 
-    if (leadingWord === 'a' || leadingWord.toUpperCase().match(MATCH_ARTICLES)) {
+    if (!leadingWord) {
+      return token;
+    }
+
+    if (leadingWord === A || MATCH_FIRST_ARTICLE.test(leadingWord.toUpperCase())) {
       token = `${leadingWord} ${token}`;
     }
 
@@ -150,43 +202,67 @@ module.exports = async ({
    */
 
   const querify = input => {
-    const tokens = input.split(' ');
     const query = input.replace(MATCH_PUNCTUATION, '');
+    const tokens = query.split(' ');
 
     let firstWord = tokens[0].trim();
 
-    if (
-      MATCH_MODAL_REGULAR.test(firstWord) ||
-      MATCH_MODAL_DOES.test(firstWord) ||
-      MATCH_MODAL_DID.test(firstWord)
-    ) {
+    if (MATCH_FIRST_MODAL.test(firstWord.toUpperCase())) {
       return query;
     }
 
-    if (
-      MATCH_WH_REGULAR.test(firstWord) ||
-      MATCH_WHERE.test(firstWord) ||
-      MATCH_WHY.test(firstWord)
-    ) {
+    // TODO: Route queries from natural language
+
+    if (MATCH_FIRST_WH.test(firstWord.toUpperCase())) {
+      const secondWord = tokens[1].trim();
+
+      if (
+        firstWord.toLowerCase() === HOW &&
+        secondWord.toLowerCase() === COME
+      ) {
+        const thirdWord = tokens[2].trim();
+
+        if (thirdWord === A || MATCH_FIRST_ARTICLE.test(thirdWord.toUpperCase())) {
+          return querify(`Why is ${query.slice(9)}`);
+        }
+
+        return querify(`Why are ${query.slice(9)}`);
+      }
+
       // TODO: Store Wh-word for focus context
       //       For now just return the whole query
 
       return query;
     }
 
+    // TODO: Optimize router
+
     if (
-      MATCH_WH_REGULAR.test(query) ||
-      MATCH_WHERE.test(query) ||
-      MATCH_WHY.test(query)
+      input.toLowerCase().slice(0, 8).trim() === 'show me' ||
+      input.toLowerCase().slice(0, 8).trim() === 'tell me'
     ) {
+      return querify(`What is ${query.slice(8)}`);
+    }
+
+    if (input.toLowerCase().slice(0, 9).trim() === 'identify') {
+      return querify(`What is ${query.slice(9)}`);
+    }
+
+    if (input.toLowerCase().slice(0, 14).trim() === 'tell me about') {
+      return querify(`What is ${query.slice(14)}`);
+    }
+
+    if (input.toLowerCase().slice(0, 17).trim() === 'talk to me about') {
+      return querify(`What is ${query.slice(17)}`);
+    }
+
+    if (MATCH_FIRST_WH.test(query.toUpperCase())) {
       // TODO: Store preface for focus context
       //       For now just remove it
 
-      const whWord = (
-        query.indexOf(MATCH_WH_REGULAR) ||
-        query.indexOf(MATCH_WHERE) ||
-        query.indexOf(MATCH_WHY)
-      );
+      const whWord = tokens[
+        tokens.findIndex(token => MATCH_FIRST_WH.test(token.toUpperCase()))
+      ];
 
       if (!whWord) return false;
 
@@ -194,7 +270,11 @@ module.exports = async ({
       //       Replace the positional word with the
       //       noun for noun context
 
-      return querify(query.slice(whWord).trim());
+      const question = tokens.slice(tokens.indexOf(whWord)).join(' ').trim();
+
+      console.log('PREFACE', question, '...');
+
+      return querify(question);
     }
 
     return query;
@@ -212,9 +292,12 @@ module.exports = async ({
 
     // Example query: "is New York considered a melting pot?"
 
-    const firstWord = query.split(' ')[0].trim();
     const nounPhrase = getNounPhrase(query).trim();
     const positionalPhrase = getPositionalPhrase(query).trim();
+
+    if (!nounPhrase) {
+      return "I'm not able to respond to questions about myself because I only train on external information.";
+    }
 
     // Get the first subject of the sentence
     // Example: "New York"
@@ -230,31 +313,33 @@ module.exports = async ({
     // Example A: ["New York is considered to be the melting pot of the world."]
     // Example B: ["New York is considered to be one of the most ethnically diverse cities in the United States."]
 
+    const firstWord = query.split(' ')[0].trim();
+
     let completions, sample;
+
+    console.log('COMPLETE', result.trim(), '...');
 
     sample = getCompletions(result.trim())?.completions;
     completions = sample && sample.filter(Boolean);
 
-    console.log('COMPLETE', result.trim(), '...');
-
     // If none and not a location, fallback to just completing
     // the noun phrase
 
-    if (!completions?.length && !firstWord.toUpperCase().match('WHERE')) {
+    if (!completions?.length && !MATCH_FIRST_WHERE.test(firstWord.toUpperCase())) {
       sample = getCompletions(nounPhrase)?.completions;
       completions = sample && sample.filter(Boolean);
       result = result.replace(positionalPhrase, '').trim();
       console.log('FALLBACK', nounPhrase, '...');
-    }
 
-    // If none and the query is just 1 word, fallback to completing
-    // the first word of the query
+      // If none and the query is just 1 word, fallback to completing
+      // the first word of the query
 
-    if (!completions?.length && firstWord.trim() === query.trim()) {
-      sample = getCompletions(firstWord)?.completions;
-      completions = sample && sample.filter(Boolean);
-      result = firstWord.trim();
-      console.log('FALLBACK', firstWord, '...');
+      if (!completions?.length && firstWord.trim() === query.trim()) {
+        sample = getCompletions(firstWord)?.completions;
+        completions = sample && sample.filter(Boolean);
+        result = firstWord.trim();
+        console.log('FALLBACK', firstWord, '...');
+      }
     }
 
     const keyword = (getFocus(query) || '').trim();
@@ -283,12 +368,12 @@ module.exports = async ({
     // Handle no data
 
     if (!completion) {
-      return "I'm not able to respond to that coherently due to lack of training data.";
+      return "I don't know, sorry.";
     }
 
     // If why, append "because"
 
-    if (MATCH_WHY.test(firstWord.toUpperCase())) {
+    if (MATCH_FIRST_WHY.test(firstWord.toUpperCase())) {
       result += ` ${keyword} ${BECAUSE}`;
     }
 
@@ -306,7 +391,11 @@ module.exports = async ({
    */
 
   const ask = input => {
-    if (!input) return;
+    // Handle insufficient input
+
+    if (input.split(' ').length < 2) {
+      return "Can you clarify or rephrase?";
+    }
 
     // Convert the user input to a query
 
