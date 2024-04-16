@@ -44,7 +44,7 @@ MyChatBot();
 
 Q&A Tests ([Paris](https://github.com/bennyschmidt/llimo/blob/master/training/datasets/Paris.js) dataset):
 
-https://github.com/bennyschmidt/llimo/assets/45407493/df8e9627-ff48-41ed-8714-a880beb8680a
+https://github.com/bennyschmidt/llimo/assets/45407493/899f4c19-7095-4211-a42a-2fce156034fa
 
 A work in progress. Things needed:
 
