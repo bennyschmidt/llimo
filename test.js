@@ -98,7 +98,7 @@ const runTests = async () => {
     "what was Paris the capital of?",
     "where is London",
     "What is Paris surrounded by?",
-    "how is paris referred to as?",
+    "how is paris referred to?",
     "when did Paris become so popular?",
     "Why is Paris a popular destination?",
     "Of all cities, why was Paris significant?",
