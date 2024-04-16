@@ -18,9 +18,10 @@ const withDataset = async (dataset, questions) => {
     // Log chat response
 
     console.log(
-      '\n\nask >>\n\n',
-      `You: ${question}\n`,
-      `LLM: ${agent.ask(question)}\n\n`
+      '\x1b[36m%s\x1b[0m',
+      '\n\nASK >>\n\n',
+      `Question: ${question}\n`,
+      `Answer: ${agent.ask(question)}\n\n`
     );
 
     await delay(2000);
@@ -40,9 +41,10 @@ const withBootstrap = async questions => {
     // Log chat response
 
     console.log(
-      '\n\nask >>\n\n',
-      `You: ${question}\n`,
-      `LLM: ${agent.ask(question)}\n\n`
+      '\x1b[36m%s\x1b[0m',
+      '\n\nASK >>\n\n',
+      `Question: ${question}\n`,
+      `Answer: ${agent.ask(question)}\n\n`
     );
 
     await delay(2000);
@@ -60,9 +62,10 @@ const withFiles = async (files, questions) => {
     // Log chat response
 
     console.log(
-      '\n\nask >>\n\n',
-      `You: ${question}\n`,
-      `LLM: ${agent.ask(question)}\n\n`
+      '\x1b[36m%s\x1b[0m',
+      '\n\nASK >>\n\n',
+      `Question: ${question}\n`,
+      `Answer: ${agent.ask(question)}\n\n`
     );
 
     await delay(2000);
@@ -72,6 +75,12 @@ const withFiles = async (files, questions) => {
 const runTests = async () => {
   // Unit: Run different chat prompts in isolation
   //       with different datasets
+
+  console.log(
+    '\x1b[33m',
+    '\n\nDATASET: "open-source-books"\n\n',
+    '\x1b[0m'
+  );
 
   await withDataset(OpenSourceBooksDataset, [
     "What is a fact about grass?",
@@ -84,9 +93,14 @@ const runTests = async () => {
     "when was the night dark?",
     "Where were the keys?",
     "how would he have known?",
-    "Why is the sky blue?",
     "how come the sky is blue"
   ]);
+
+  console.log(
+    '\x1b[33m',
+    '\n\nDATASET: "paris"\n\n',
+    '\x1b[0m'
+  );
 
   await withDataset(ParisDataset, [
     "where is Paris?",
@@ -99,7 +113,6 @@ const runTests = async () => {
     "where is London",
     "What is Paris surrounded by?",
     "how is paris referred to?",
-    "when did Paris become so popular?",
     "Why is Paris a popular destination?",
     "Of all cities, why was Paris significant?",
     "In what year was the Eiffel Tower constructed?",
