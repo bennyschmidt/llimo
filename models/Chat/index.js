@@ -11,6 +11,26 @@ const {
 } = require('../../utils');
 
 const MATCH_PUNCTUATION = new RegExp(/[.,\/#!$%?“”\^&\*;:{}=\_`~()]/g);
+const MATCH_FIRST_WH = new RegExp(/WHO|WHAT|WHEN|HOW|WHERE|WHY/);
+const MATCH_FIRST_WHERE = new RegExp(/WHERE/);
+const MATCH_FIRST_WHY = new RegExp(/WHY/);
+const MATCH_FIRST_MODAL = new RegExp(/IS|AM|ARE|WAS|HAS|HAVE|HAD|MUST|MAY|MIGHT|WERE|WILL|SHALL|CAN|COULD|WOULD|SHOULD|OUGHT|DOES|DID/);
+const MATCH_FIRST_YOU = new RegExp(/YOU/);
+const MATCH_FIRST_ARTICLE = new RegExp(/THE|AN/);
+const MATCH_POS_FOCUS = new RegExp(/JJ|VBP|VBN/);
+const POS_NOUN = "NN";
+const POS_PROPER_NOUN = "NNP";
+const POS_PRONOUN = "PRP"
+const LOCATED = "located";
+const BECAUSE = "because";
+const HOW = "how";
+const COME = "come";
+const ARE = "are";
+const YOU = "you";
+const AM = "am";
+const IT = "It";
+const A = "A";
+const I = "I";
 
 /**
  * Create a language model agent from a
@@ -29,6 +49,9 @@ module.exports = async ({
   });
 
   const getNounPhrase = query => {
+    const tokens = query.split(' ');
+    const firstWord = tokens[0].trim();
+    const secondWord = tokens[1]?.trim?.() || '';
     const partsOfSpeech = getPartsOfSpeech(query);
 
     if (!partsOfSpeech?.length) return;
@@ -40,11 +63,11 @@ module.exports = async ({
     let isPrevNNP = true;
 
     for (const part of partsOfSpeech) {
-      if (part.pos === 'NNP') {
+      if (part.pos === POS_PROPER_NOUN) {
         const properNoun = `${part.value} `;
 
         if (isPrevNNP) {
-          result += properNoun;
+          result += prependArticle(query, properNoun);
         } else {
           result = prependArticle(query, properNoun);
         }
@@ -61,11 +84,11 @@ module.exports = async ({
       let isPrevNN = true;
 
       for (const part of partsOfSpeech) {
-        if (part.pos.match('NN')) {
+        if (part.pos.match(POS_NOUN)) {
           const noun = `${part.value} `;
 
           if (isPrevNN) {
-            result += noun;
+            result += prependArticle(query, noun);
           } else {
             result = prependArticle(query, noun);
           }
@@ -77,45 +100,83 @@ module.exports = async ({
       }
     }
 
+    // Find pronoun
+
+    if (!result) {
+      for (const part of partsOfSpeech) {
+        if (part.pos.match(POS_PRONOUN)) {
+          const pronoun = `${part.normal} `;
+
+          result += pronoun;
+
+          if (MATCH_FIRST_YOU.test(result.toUpperCase())) {
+            return '';
+          }
+        }
+      }
+    }
+
     // Default noun
 
     if (!result) {
-      result = 'It';
+      result = IT;
+    }
+
+    if (
+      result.trim().toUpperCase() === I ||
+      firstWord === AM || secondWord === AM
+    ) {
+      result = YOU;
     }
 
     return result.trim();
   };
 
   const getPositionalPhrase = query => {
-    const firstWord = query.split(' ')[0].trim();
+    const tokens = query.split(' ');
+    const firstWord = tokens[0].trim();
+    const secondWord = tokens[1]?.trim?.() || '';
     const partsOfSpeech = getPartsOfSpeech(query);
 
-    if (!partsOfSpeech?.length) return;
+    if (!partsOfSpeech?.length) return '';
 
-    let phrase = partsOfSpeech.find(({ pos }) => pos.match(/VB/))?.value;
+    let cursor = '';
 
-    if (firstWord.toUpperCase().match('WHERE')) {
-      phrase += ` located`;
+    const isWhWord = MATCH_FIRST_WH.test(firstWord.toUpperCase());
+    const isVerb = MATCH_FIRST_MODAL.test(firstWord.toUpperCase());
+
+    if (isWhWord) {
+      cursor = `${secondWord}`
+    } else if (isVerb) {
+      cursor = `${firstWord}`
     }
 
-    return phrase || '';
+    if (firstWord === AM || secondWord === AM || secondWord === I) {
+      cursor = ARE;
+    }
+
+    // If where, append "located"
+
+    if (MATCH_FIRST_WHERE.test(firstWord.toUpperCase())) {
+      cursor += ` ${LOCATED}`;
+    }
+
+    return cursor || '';
   };
 
   const getFocus = query => {
     const noun = getNounPhrase(query);
     const partsOfSpeech = getPartsOfSpeech(query.slice(query.indexOf(noun)));
 
-    console.log(partsOfSpeech);
-
     if (!partsOfSpeech?.length) return;
 
     const nextNoun = getNounPhrase(query.slice(query.indexOf(noun) + noun.length));
 
-    if (nextNoun && nextNoun !== 'It') {
+    if (nextNoun && nextNoun !== IT) {
       return nextNoun;
     }
 
-    const word = partsOfSpeech.find(({ pos }) => pos.match(/JJ|VBP|VBN/))?.value;
+    const word = partsOfSpeech.find(({ pos }) => pos.match(MATCH_POS_FOCUS))?.value;
 
     return word || '';
   };
@@ -124,7 +185,11 @@ module.exports = async ({
     const leadingPhrase = sequence.slice(0, sequence.indexOf(token.trim()));
     const leadingWord = leadingPhrase.split(' ').filter(Boolean).pop();
 
-    if (leadingWord === 'a' || leadingWord.match(/the|an/)) {
+    if (!leadingWord) {
+      return token;
+    }
+
+    if (leadingWord === A || MATCH_FIRST_ARTICLE.test(leadingWord.toUpperCase())) {
       token = `${leadingWord} ${token}`;
     }
 
@@ -132,66 +197,139 @@ module.exports = async ({
   };
 
   /**
-   * ask
-   * Question/answer transformer
+   * querify
+   * Convert a raw input to a query
    */
 
-  const ask = query => {
-    if (!query) return;
+  const querify = input => {
+    const query = input.replace(MATCH_PUNCTUATION, '');
+    const tokens = query.split(' ');
 
-    const {
-      getCompletions
-    } = languageModel;
+    let firstWord = tokens[0].trim();
 
-    // Transforms a query into a combined completion
+    if (MATCH_FIRST_MODAL.test(firstWord.toUpperCase())) {
+      return query;
+    }
 
-    const transform = query => {
-      // Example query: "is New York considered a melting pot?"
+    // TODO: Route queries from natural language
 
-      const firstWord = query.split(' ')[0].trim();
-      const nounPhrase = getNounPhrase(query).trim();
-      const positionalPhrase = getPositionalPhrase(query).trim();
-
-      // Handle inference query
+    if (MATCH_FIRST_WH.test(firstWord.toUpperCase())) {
+      const secondWord = tokens[1].trim();
 
       if (
-        firstWord.toUpperCase() === 'IF' ||
-        firstWord.toUpperCase() === 'WHEN' ||
-        !isNaN(firstWord)
+        firstWord.toLowerCase() === HOW &&
+        secondWord.toLowerCase() === COME
       ) {
-        return "I'm not yet able to infer logic.";
+        const thirdWord = tokens[2].trim();
+
+        if (thirdWord === A || MATCH_FIRST_ARTICLE.test(thirdWord.toUpperCase())) {
+          return querify(`Why is ${query.slice(9)}`);
+        }
+
+        return querify(`Why are ${query.slice(9)}`);
       }
 
-      // Get the first subject of the sentence
-      // Example: "New York"
+      // TODO: Store Wh-word for focus context
+      //       For now just return the whole query
 
-      let result = nounPhrase;
+      return query;
+    }
 
-      // Transpose with prepositions and verbs
-      // Example: "New York is considered"
+    // TODO: Optimize router
 
-      result += ` ${positionalPhrase}`;
+    if (
+      input.toLowerCase().slice(0, 8).trim() === 'show me' ||
+      input.toLowerCase().slice(0, 8).trim() === 'tell me'
+    ) {
+      return querify(`What is ${query.slice(8)}`);
+    }
 
-      // Get completions
-      // Example A: ["New York is considered to be the melting pot of the world."]
-      // Example B: ["New York is considered to be one of the most ethnically diverse cities in the United States."]
+    if (input.toLowerCase().slice(0, 9).trim() === 'identify') {
+      return querify(`What is ${query.slice(9)}`);
+    }
 
-      let completions, sample;
+    if (input.toLowerCase().slice(0, 14).trim() === 'tell me about') {
+      return querify(`What is ${query.slice(14)}`);
+    }
 
-      sample = getCompletions(result.trim())?.completions;
+    if (input.toLowerCase().slice(0, 17).trim() === 'talk to me about') {
+      return querify(`What is ${query.slice(17)}`);
+    }
+
+    if (MATCH_FIRST_WH.test(query.toUpperCase())) {
+      // TODO: Store preface for focus context
+      //       For now just remove it
+
+      const whWord = tokens[
+        tokens.findIndex(token => MATCH_FIRST_WH.test(token.toUpperCase()))
+      ];
+
+      if (!whWord) return false;
+
+      // TODO: If there's a noun in the preface,
+      //       Replace the positional word with the
+      //       noun for noun context
+
+      const question = tokens.slice(tokens.indexOf(whWord)).join(' ').trim();
+
+      console.log('PREFACE', question, '...');
+
+      return querify(question);
+    }
+
+    return query;
+  };
+
+  /**
+   * transform
+   * Transform a prompt to an answer
+   */
+
+  const transform = query => {
+    if (!query) return;
+
+    const { getCompletions } = languageModel;
+
+    // Example query: "is New York considered a melting pot?"
+
+    const nounPhrase = getNounPhrase(query).trim();
+    const positionalPhrase = getPositionalPhrase(query).trim();
+
+    if (!nounPhrase) {
+      return "I'm not able to respond to questions about myself because I only train on external information.";
+    }
+
+    // Get the first subject of the sentence
+    // Example: "New York"
+
+    let result = nounPhrase;
+
+    // Transpose with prepositions and verbs
+    // Example: "New York is considered"
+
+    result += ` ${positionalPhrase}`;
+
+    // Get completions
+    // Example A: ["New York is considered to be the melting pot of the world."]
+    // Example B: ["New York is considered to be one of the most ethnically diverse cities in the United States."]
+
+    const firstWord = query.split(' ')[0].trim();
+
+    let completions, sample;
+
+    console.log('COMPLETE', result.trim(), '...');
+
+    sample = getCompletions(result.trim())?.completions;
+    completions = sample && sample.filter(Boolean);
+
+    // If none and not a location, fallback to just completing
+    // the noun phrase
+
+    if (!completions?.length && !MATCH_FIRST_WHERE.test(firstWord.toUpperCase())) {
+      sample = getCompletions(nounPhrase)?.completions;
       completions = sample && sample.filter(Boolean);
-
-      console.log('COMPLETE', result.trim(), '...');
-
-      // If none and not a location, fallback to just completing
-      // the noun phrase
-
-      if (!completions?.length && !firstWord.toUpperCase().match('WHERE')) {
-        sample = getCompletions(nounPhrase)?.completions;
-        completions = sample && sample.filter(Boolean);
-        result = result.replace(positionalPhrase, '').trim();
-        console.log('FALLBACK', nounPhrase, '...');
-      }
+      result = result.replace(positionalPhrase, '').trim();
+      console.log('FALLBACK', nounPhrase, '...');
 
       // If none and the query is just 1 word, fallback to completing
       // the first word of the query
@@ -202,53 +340,78 @@ module.exports = async ({
         result = firstWord.trim();
         console.log('FALLBACK', firstWord, '...');
       }
+    }
 
-      const keyword = (getFocus(query) || '').trim();
+    const keyword = (getFocus(query) || '').trim();
 
-      let completion = '';
+    let completion = '';
 
-      const matchedPhrases = completions.filter(phrase => keyword && phrase.match(keyword));
-      const isMatch = !!matchedPhrases?.length;
+    const matchedPhrases = completions.filter(phrase => keyword && phrase.match(keyword));
+    const isMatch = !!matchedPhrases?.length;
 
-      console.log('MATCH', keyword, isMatch);
+    console.log('MATCH', keyword, isMatch);
 
-      if (isMatch) {
-        // Filter to keyword matches
+    if (isMatch) {
+      // Filter to keyword matches
 
-        completions = matchedPhrases;
-      }
+      completions = matchedPhrases;
+    }
 
-      // Pull a ranked completion from the top ${RANKING_BATCH_SIZE}
+    // Pull a ranked completion from the top ${RANKING_BATCH_SIZE}
 
-      completion = completions[
-        (Math.random() * completions.length) << 0
-      ];
+    completion = completions[
+      (Math.random() * completions.length) << 0
+    ];
 
-      console.log(completions);
+    console.log(completions);
 
-      // Handle no data
+    // Handle no data
 
-      if (!completion) {
-        return "I'm not able to respond to that coherently due to lack of training data.";
-      }
+    if (!completion) {
+      return "I don't know, sorry.";
+    }
 
-      // Append completion
-      // Example: "New York is considered to be the melting pot of the world."
+    // If why, append "because"
 
-      result = result.trim() + ` ${completion}`;
+    if (MATCH_FIRST_WHY.test(firstWord.toUpperCase())) {
+      result += ` ${keyword} ${BECAUSE}`;
+    }
 
-      return result;
-    };
+    // Append completion
+    // Example: "New York is considered to be the melting pot of the world."
 
-    // transform the input to the correct prompt
+    result = result.trim() + ` ${completion}`;
 
-    query = query.replace(MATCH_PUNCTUATION, '');
+    return result;
+  };
+
+  /**
+   * ask
+   * Question/answer transformer
+   */
+
+  const ask = input => {
+    // Handle insufficient input
+
+    if (input.split(' ').length < 2) {
+      return "Can you clarify or rephrase?";
+    }
+
+    // Convert the user input to a query
+
+    const query = querify(input);
+
+    if (!query) {
+      return "I can't respond to commands yet.";
+    }
+
+    // Transform the query to an answer
 
     const answer = transform(query);
 
     // Format and return the answer
 
-    return toSentenceCase(answer);
+    return answer && toSentenceCase(answer);
   };
 
   // Chat API (extends Language)

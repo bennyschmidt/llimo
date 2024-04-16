@@ -75,24 +75,35 @@ const runTests = async () => {
 
   await withDataset(OpenSourceBooksDataset, [
     "What is a fact about grass?",
-    "what is london",
+    "tell me about london",
     "what happened in the morning",
     "should I travel by car, train, or airplane?",
     "how was the sun then?",
-    "what's thai food?"
+    "what's Thai food?",
+    "identify John",
+    "when was the night dark?",
+    "Where were the keys?",
+    "how would he have known?",
+    "Why is the sky blue?",
+    "how come the sky is blue"
   ]);
 
   await withDataset(ParisDataset, [
     "where is Paris?",
     "what is paris home to",
-    "what does Paris represent?",
+    "talk to me about paris",
     "what is Paris known for?",
     "what is paris famous for",
     "what is Paris the capital of?",
     "what was Paris the capital of?",
     "where is London",
     "What is Paris surrounded by?",
-    "what is paris referred to as?"
+    "how is paris referred to?",
+    "when did Paris become so popular?",
+    "Why is Paris a popular destination?",
+    "Of all cities, why was Paris significant?",
+    "In what year was the Eiffel Tower constructed?",
+    "In Paris, is French the main language?"
   ]);
 
   // e2e: Run training from bootstrap then get completions
