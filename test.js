@@ -108,14 +108,14 @@ const runTests = async () => {
 
   // e2e: Run training from bootstrap then get completions
 
-  // await withBootstrap(['what about society?']);
+  await withBootstrap(['what about society?']);
 
   // e2e: Run full training on user provided files then prompt
 
-  // await withFiles(
-  //   ['brave-new-world'],
-  //   ['what is The Nile?']
-  // );
+  await withFiles(
+    ['brave-new-world'],
+    ['what is The Nile?']
+  );
 };
 
 runTests();
