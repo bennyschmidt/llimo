@@ -26,7 +26,12 @@ const ParisChat = async () => {
     const answer = agent.ask(input);
 
     if (answer) {
-      console.log(`ANSWER ${answer}`, '\n');
+      console.log(
+        '\n',
+        `\x1b[36m ${answer}`,
+        '\n',
+        '\x1b[0m'
+      );
     }
 
     prompt();
