@@ -42,9 +42,9 @@ MyChatBot();
 
 ## Demo
 
-Q&A Tests ([Paris](https://github.com/bennyschmidt/llimo/blob/master/training/datasets/Paris.js) dataset):
+LM Chat ([Paris](https://github.com/bennyschmidt/llimo/blob/master/training/datasets/Paris.js) dataset):
 
-https://github.com/bennyschmidt/llimo/assets/45407493/899f4c19-7095-4211-a42a-2fce156034fa
+https://github.com/bennyschmidt/llimo/assets/45407493/6ba6d0fe-c7b9-47d8-9b81-fa567faa89e0
 
 A work in progress. Things needed:
 
