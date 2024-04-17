@@ -18,13 +18,14 @@ const withDataset = async (dataset, questions) => {
     // Log chat response
 
     console.log(
-      '\x1b[36m%s\x1b[0m',
+      '\x1b[35m',
       '\n\nASK >>\n\n',
-      `Question: ${question}\n`,
-      `Answer: ${agent.ask(question)}\n\n`
+      `\x1b[32m Question: ${question}\n`,
+      `\x1b[36m Answer: ${agent.ask(question)}\n\n`,
+      '\x1b[0m'
     );
 
-    await delay(2000);
+    await delay(3000);
   }
 };
 
@@ -41,13 +42,14 @@ const withBootstrap = async questions => {
     // Log chat response
 
     console.log(
-      '\x1b[36m%s\x1b[0m',
+      '\x1b[35m',
       '\n\nASK >>\n\n',
-      `Question: ${question}\n`,
-      `Answer: ${agent.ask(question)}\n\n`
+      `\x1b[32m Question: ${question}\n`,
+      `\x1b[36m Answer: ${agent.ask(question)}\n\n`,
+      '\x1b[0m'
     );
 
-    await delay(2000);
+    await delay(3000);
   }
 };
 
@@ -62,13 +64,14 @@ const withFiles = async (files, questions) => {
     // Log chat response
 
     console.log(
-      '\x1b[36m%s\x1b[0m',
+      '\x1b[35m',
       '\n\nASK >>\n\n',
-      `Question: ${question}\n`,
-      `Answer: ${agent.ask(question)}\n\n`
+      `\x1b[32m Question: ${question}\n`,
+      `\x1b[36m Answer: ${agent.ask(question)}\n\n`,
+      '\x1b[0m'
     );
 
-    await delay(2000);
+    await delay(3000);
   }
 };
 
@@ -77,10 +80,11 @@ const runTests = async () => {
   //       with different datasets
 
   console.log(
-    '\x1b[33m',
+    '\x1b[35m',
     '\n\nDATASET: "open-source-books"\n\n',
     '\x1b[0m'
   );
+
 
   await withDataset(OpenSourceBooksDataset, [
     "What is a fact about grass?",
@@ -97,7 +101,7 @@ const runTests = async () => {
   ]);
 
   console.log(
-    '\x1b[33m',
+    '\x1b[35m',
     '\n\nDATASET: "paris"\n\n',
     '\x1b[0m'
   );
