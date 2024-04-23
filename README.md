@@ -24,14 +24,6 @@ const MyChatBot = async () => {
     bootstrap: true
   });
 
-  // Predict the next word
-
-  agent.getTokenPrediction('what');
-
-  // Predict the next 5 words
-
-  agent.getTokenSequencePrediction('what is', 5);
-
   // Chat with LLM
 
   agent.ask('what is Thai food?');
