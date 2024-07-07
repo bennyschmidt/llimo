@@ -38,8 +38,14 @@ LM Chat ([Paris](https://github.com/bennyschmidt/llimo/blob/master/training/data
 
 https://github.com/bennyschmidt/llimo/assets/45407493/6ba6d0fe-c7b9-47d8-9b81-fa567faa89e0
 
-A work in progress. Things needed:
+Benefits:
 
-1) A lot more training data - this directly translates to what it accurately "knows"
+- Faster than conventional training and inference, thus:
+- Instant answers
+- No hallucinations
 
-2) Better parts-of-speech parsing - to allow for more flexible, even misspelled inputs
+Differences from conventional language models:
+
+- Simpler take on embeddings (just bigrams stored in JSON format), thus:
+- Not as generative as conventional LLMs
+- Better suited for completion (prediction) type work 
