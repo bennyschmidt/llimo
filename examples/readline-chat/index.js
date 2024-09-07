@@ -15,8 +15,8 @@ const ParisChat = async () => {
 
   const print = input => {
     if (
-      input.toLowerCase() === 'bye' ||
-      input.toLowerCase() === 'exit'
+      input.toLowerCase() === '/bye' ||
+      input.toLowerCase() === '/exit'
     ) {
       console.log('Bye!');
       rl.close();
