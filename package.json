@@ -1,6 +1,6 @@
 {
   "name": "llimo",
-  "version": "1.0.5",
+  "version": "1.0.8",
   "author": "bennyschmidt",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "dotenv": "^16.4.5",
-    "next-token-prediction": "^1.0.7",
+    "next-token-prediction": "^1.0.8",
     "wink-pos-tagger": "^2.2.2"
   }
 }
