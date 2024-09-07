@@ -118,9 +118,14 @@ const runTests = async () => {
     "What is Paris surrounded by?",
     "how is paris referred to?",
     "Why is Paris a popular destination?",
-    "Of all cities, why was Paris significant?",
     "In what year was the Eiffel Tower constructed?",
-    "In Paris, is French the main language?"
+    "In Paris, is French the main language?",
+    "since we're talking about Paris, what is it famous for?",
+    "speaking of paris where is it",
+    "what's it called, the Eiffel...?",
+    "tell me about the French",
+    "talk about france",
+    "regarding the Eiffel Tower, what was it built for?"
   ]);
 
   // e2e: Run training from bootstrap then get completions

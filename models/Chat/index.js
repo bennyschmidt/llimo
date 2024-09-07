@@ -215,6 +215,35 @@ module.exports = async ({
   };
 
   /**
+   * getPreface
+   * Returns the part of a sequence leading up to
+   * a Wh-word
+   */
+
+  const getPreface = input => {
+    const tokens = input.split(' ');
+
+    if (MATCH_FIRST_WH.test(input.toUpperCase())) {
+      // TODO: Store preface for focus context
+      //       For now just remove it
+
+      const whWord = tokens[
+        tokens.findIndex(token => MATCH_FIRST_WH.test(token.toUpperCase()))
+      ];
+
+      if (!whWord) return false;
+
+      const preface = tokens.slice(0, tokens.indexOf(whWord)).join(' ').trim();
+
+      console.log(PREFACE, preface);
+
+      return preface || '';
+    }
+
+    return '';
+  };
+
+  /**
    * prependArticle
    * Prepends a token with its article token
    * as it appears in a sequence
@@ -268,9 +297,6 @@ module.exports = async ({
         return querify(`Why are ${query.slice(9)}`);
       }
 
-      // TODO: Store Wh-word for focus context
-      //       For now just return the whole query
-
       return query;
     }
 
@@ -284,27 +310,6 @@ module.exports = async ({
       }
     }
 
-    if (MATCH_FIRST_WH.test(query.toUpperCase())) {
-      // TODO: Store preface for focus context
-      //       For now just remove it
-
-      const whWord = tokens[
-        tokens.findIndex(token => MATCH_FIRST_WH.test(token.toUpperCase()))
-      ];
-
-      if (!whWord) return false;
-
-      // TODO: If there's a noun in the preface,
-      //       Replace the positional word with the
-      //       noun for noun context
-
-      const question = tokens.slice(tokens.indexOf(whWord)).join(' ').trim();
-
-      console.log(PREFACE, question, '...');
-
-      return querify(question);
-    }
-
     return query;
   };
 
@@ -313,14 +318,15 @@ module.exports = async ({
    * Transform a prompt to an answer
    */
 
-  const transform = query => {
+  const transform = (query, preface) => {
     if (!query) return;
 
     const { getCompletions } = languageModel;
 
     // Example query: "is New York considered a melting pot?"
 
-    const nounPhrase = getNounPhrase(query).trim();
+    const prefaceFocus = (getNounPhrase(preface) || '').trim();
+    const nounPhrase = prefaceFocus || getNounPhrase(query).trim();
     const positionalPhrase = getPositionalPhrase(query).trim();
 
     if (!nounPhrase) {
@@ -371,6 +377,15 @@ module.exports = async ({
     }
 
     const keyword = (getFocus(query) || '').trim();
+
+    if (prefaceFocus === nounPhrase) {
+      const impliedNoun = getNounPhrase(query).trim();
+      const impliedQuery = query.replace(impliedNoun, prefaceFocus).trim();
+
+      // Recursively query
+
+      return ask(impliedQuery);
+    }
 
     let completion = '';
 
@@ -427,9 +442,11 @@ module.exports = async ({
       return INSUFFICIENT_INPUT_ERROR;
     }
 
+    const preface = getPreface(input);
+
     // Convert the user input to a query
 
-    const query = querify(input);
+    const query = querify(input.replace(preface, ''));
 
     if (!query) {
       return INVALID_COMMAND_ERROR;
@@ -437,7 +454,7 @@ module.exports = async ({
 
     // Transform the query to an answer
 
-    const answer = transform(query);
+    const answer = transform(query, preface);
 
     // Format and return the answer
 
