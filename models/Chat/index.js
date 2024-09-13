@@ -415,7 +415,7 @@ module.exports = async ({
     // If why, append "because"
 
     if (MATCH_FIRST_WHY.test(firstWord.toUpperCase())) {
-      result += ` ${keyword} ${BECAUSE}`;
+      result += ` ${keyword} ${BECAUSE} ${nounPhrase} might be`;
     }
 
     // Append completion
