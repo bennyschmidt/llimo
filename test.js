@@ -2,7 +2,7 @@ const { dirname } = require('path');
 const __root = dirname(require.main.filename);
 
 const { Chat: ChatModel } = require('./models');
-const OpenSourceBooksDataset = require(`${__root}/training/datasets/OpenSourceBooks`);
+const DefaultDataset = require(`${__root}/training/datasets/Default`);
 const ParisDataset = require(`${__root}/training/datasets/Paris`);
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
@@ -81,28 +81,22 @@ const runTests = async () => {
 
   console.log(
     '\x1b[35m',
-    '\n\nDATASET: "open-source-books"\n\n',
+    '\n\nDATASET: "Default"\n\n',
     '\x1b[0m'
   );
 
 
-  await withDataset(OpenSourceBooksDataset, [
-    "What is a fact about grass?",
+  await withDataset(DefaultDataset, [
+    "What is something unique about the tuatara?",
     "tell me about london",
-    "what happened in the morning",
-    "should I travel by car, train, or airplane?",
-    "how was the sun then?",
-    "what's Thai food?",
+    "what am I doing?",
     "identify John",
-    "when was the night dark?",
-    "Where were the keys?",
-    "how would he have known?",
-    "how come the sky is blue"
+    "what could he have done?"
   ]);
 
   console.log(
     '\x1b[35m',
-    '\n\nDATASET: "paris"\n\n',
+    '\n\nDATASET: "Paris"\n\n',
     '\x1b[0m'
   );
 
@@ -118,26 +112,25 @@ const runTests = async () => {
     "What is Paris surrounded by?",
     "how is paris referred to?",
     "Why is Paris a popular destination?",
-    "In what year was the Eiffel Tower constructed?",
+    "When was the Eiffel Tower built?",
     "In Paris, is French the main language?",
     "since we're talking about Paris, what is it famous for?",
     "speaking of paris where is it",
-    "what's it called, the Eiffel...?",
-    "tell me about the French",
+    "tell me about the French language",
     "talk about france",
     "regarding the Eiffel Tower, what was it built for?"
   ]);
 
-  // e2e: Run training from bootstrap then get completions
-
-  await withBootstrap(['what about society?']);
-
   // e2e: Run full training on user provided files then prompt
 
   await withFiles(
-    ['brave-new-world'],
-    ['what is The Nile?']
+    ['cat-facts'],
+    ['talk to me about cats']
   );
+
+  // e2e: Run training from bootstrap then get completions
+
+  await withBootstrap(['what about society?']);
 };
 
 runTests();
