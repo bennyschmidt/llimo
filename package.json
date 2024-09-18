@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "dotenv": "^16.4.5",
-    "next-token-prediction": "^1.1.5",
+    "next-token-prediction": "^1.1.6",
     "wink-pos-tagger": "^2.2.2"
   }
 }
