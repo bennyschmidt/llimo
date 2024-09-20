@@ -37,15 +37,3 @@ MyChatBot();
 LM Chat ([Paris](https://github.com/bennyschmidt/llimo/blob/master/training/datasets/Paris.js) dataset):
 
 https://github.com/bennyschmidt/llimo/assets/45407493/6ba6d0fe-c7b9-47d8-9b81-fa567faa89e0
-
-Benefits:
-
-- Faster than conventional training and inference, thus:
-- Instant answers
-- No hallucinations
-
-Differences from conventional language models:
-
-- Simpler take on embeddings (just bigrams stored in JSON format), thus:
-- Not as generative as conventional LLMs
-- Better suited for completion (prediction) type work 
