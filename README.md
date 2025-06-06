@@ -4,7 +4,7 @@
 
 Large language and image models in pure JavaScript.
 
-![llimo](https://github.com/bennyschmidt/llimo/assets/45407493/aaec96e4-52ac-498d-9e3f-eded92862ed6)
+![llimo](https://github.com/user-attachments/assets/2f9510d3-b984-45d7-bea7-1baa46826576)
 
 ## Install
 
